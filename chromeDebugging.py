@@ -6,7 +6,6 @@ import sys
 import time
 import subprocess
 
-
 def check_if_remote_system_is_live(ip):
     hostname = ip
     print ("hostname is", hostname)
@@ -19,8 +18,6 @@ def check_if_remote_system_is_live(ip):
         return True
     else:
         return False
-
-
 
 def run_command(command, dut_ip, username="root", password="test0000"):
     
@@ -88,8 +85,6 @@ def searchPatternMatched(searchInString, pattern_list=None):
     else:
         return False
 
-
-        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to runis either reboot or suspend')
@@ -132,7 +127,7 @@ if __name__ == "__main__":
             if searchPatternMatched(cmd_output, pattern_list):
                 break
             else:
-                print ("cmd successfull!")
+                print ("cmd %s successfull!"%(cmd_to_run))
         else:
             print ("please check the command you are trying!")
             break
