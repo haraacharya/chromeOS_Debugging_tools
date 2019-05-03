@@ -100,11 +100,11 @@ if __name__ == "__main__":
 	print ("Exiting test!")
 	exit(1)	
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to runis either reboot or suspend')
+    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend"')
     parser.add_argument('--IP', dest='ip_address', help='provide remote system ip')
     parser.add_argument('--COUNT', dest='iteration_count', default = 5, help='Provide iteration count!')
     parser.add_argument('--command', dest='cmd_to_run', default = "dmesg --level=err", help='Please mention the command to check in double quotes!')
-    parser.add_argument('--search_for', dest='search_patterns', help='provide one or many searchstrings with space in between', nargs='+')
+    parser.add_argument('--search_for', dest='search_patterns', help='provide one or many search strings with space. If found, test will FAIL/STOP.', nargs='+')
     args = parser.parse_args()
 
     pattern_list = args.search_patterns
@@ -117,11 +117,11 @@ if __name__ == "__main__":
         sys.exit(1)
     iteration_count = args.iteration_count
     test_to_run = args.test_to_run
-    print ("Test selected to run       :", test_to_run)
-    print ("system ip address is       :", ip_address)
-    print ("Iteration_count is         :", iteration_count)
-    print ("cmd to run                 :", cmd_to_run)
-    print ("pattern list is            :", pattern_list)
+    print ("Test selected to run          :", test_to_run)
+    print ("system ip address is          :", ip_address)
+    print ("Iteration_count is            :", iteration_count)
+    print ("cmd to run                    :", cmd_to_run)
+    print ("stop test if pattern matches  :", pattern_list)
     print ("****************************")
     if (sys.version_info > (3, 0)):
 	input("Press Enter to continue...")
