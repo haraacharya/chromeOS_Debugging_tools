@@ -96,19 +96,23 @@ def is_tool(name):
 if __name__ == "__main__":
 
     if not is_tool("sshpass"):
-	print ("sshpass is not installed. Please install sshpass with sudo apt-get install")
-	print ("Exiting test!")
-	exit(1)	
+        print ("sshpass is not installed. Please install sshpass with sudo apt-get install")
+        print ("Exiting test!")
+        exit(1)
+
     parser = argparse.ArgumentParser()
+    parser.add_argument('--testcase', dest='testcase_to_run', default = "", help='testcase to run is before reboot or suspend test')
     parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend"')
-    parser.add_argument('--IP', dest='ip_address', help='provide remote system ip')
-    parser.add_argument('--COUNT', dest='iteration_count', default = 5, help='Provide iteration count!')
+    parser.add_argument('--ip', dest='ip_address', help='provide remote system ip')
+    parser.add_argument('--count', dest='iteration_count', default = 5, help='Provide iteration count!')
     parser.add_argument('--command', dest='cmd_to_run', default = "dmesg --level=err", help='Please mention the command to check in double quotes!')
     parser.add_argument('--search_for', dest='search_patterns', help='provide one or many search strings with space. If found, test will FAIL/STOP.', nargs='+')
     args = parser.parse_args()
 
     pattern_list = args.search_patterns
-    cmd_to_run = args.cmd_to_run
+
+    testcase = args.testcase_to_run.lower()
+    cmd_to_run = args.cmd_to_run.lower()
     if args.ip_address:
         ip_address = args.ip_address
     else:
@@ -117,25 +121,35 @@ if __name__ == "__main__":
         sys.exit(1)
     iteration_count = args.iteration_count
     test_to_run = args.test_to_run
-    print ("Test selected to run          :", test_to_run)
-    print ("system ip address is          :", ip_address)
-    print ("Iteration_count is            :", iteration_count)
-    print ("cmd to run                    :", cmd_to_run)
-    print ("stop test if pattern matches  :", pattern_list)
+    print ("Testcase selected to run       :", testcase)
+    print ("Test selected to run           :", test_to_run)
+    print ("system ip address is           :", ip_address)
+    print ("Iteration_count is             :", iteration_count)
+    print ("cmd to run after selected test :", cmd_to_run)
+    print ("stop test if pattern matches   :", pattern_list)
     print ("****************************")
+    
     if (sys.version_info > (3, 0)):
-	input("Press Enter to continue...")
+        input("Press Enter to continue...")
     else:
-	raw_input("Press Enter to continue...")
+        raw_input("Press Enter to continue...")
     count = 0
+    
     while (count < int(iteration_count)):
         print ("******************************")
         print ("current count is: %d"%(count))
         print ("******************************")
+
+        if testcase:
+            testcase_output = run_command(testcase, ip_address, username="root", password="test0000")
+            print (testcase_output)
+            time.sleep(5)
+
         if test_to_run == "suspend":
             print (run_suspend(ip_address))
         else:
             print (run_reboot(ip_address))    
+        
         count = count + 1
         cmd_output = run_command(cmd_to_run, ip_address, username="root", password="test0000")
         print (cmd_output)
