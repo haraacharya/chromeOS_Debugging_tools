@@ -50,7 +50,7 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
             for i in range(reboot_wait_time):
                 time.sleep(1)
                 if check_if_remote_system_is_live(dut_ip):
-                    print ("waiting for device_initialization_seconds: ", wait_device_initialization)
+                    print ("Waiting for device initialization after test in seconds: ", wait_device_initialization)
                     time.sleep(wait_device_initialization)
                     return True
             print ("system didn't reboot back on after %d seconds wait delay" % (reboot_wait_time))
@@ -71,7 +71,7 @@ def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_
             for i in range(reboot_wait_time):
                 time.sleep(1)
                 if check_if_remote_system_is_live(dut_ip):
-                    print ("waiting for device_initialization_seconds: ", wait_device_initialization)
+                    print ("Waiting for device initialization after test in seconds: ", wait_device_initialization)
                     time.sleep(wait_device_initialization)
                     return True
         else:
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     parser.add_argument('--testcase', dest='testcase_to_run', default = "", help='testcase to run is before reboot or suspend test')
     parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend" or "coldboot"')
     parser.add_argument('--ip', dest='ip_address', help='provide remote system ip')
-    parser.add_argument('--device_initialization_wait', dest='wait_device_initialization', default = 60, help='Provide Device initialization delay in seconds after test!')
+    parser.add_argument('--after_test_delay', dest='wait_device_initialization', default = 60, help='Provide Device initialization delay in seconds after test!')
     parser.add_argument('--count', dest='iteration_count', default = 5, help='Provide iteration count!')
     parser.add_argument('--command', dest='cmd_to_run', default = "dmesg --level=err", help='Please mention the command to check in double quotes!')
     parser.add_argument('--search_for', dest='search_patterns', help='provide one or many search strings with space. If found, test will FAIL/STOP.', nargs='+')
@@ -137,6 +137,7 @@ if __name__ == "__main__":
 
     testcase = args.testcase_to_run.lower()
     cmd_to_run = args.cmd_to_run
+    
     if args.ip_address:
         ip_address = args.ip_address
     else:
@@ -144,13 +145,13 @@ if __name__ == "__main__":
         print ("check with --help or give cmd argument --IP <ip_address>")
         sys.exit(1)
     
-    wait_device_initialization = args.wait_device_initialization
+    wait_device_initialization = float(args.wait_device_initialization)
     iteration_count = args.iteration_count
     test_to_run = args.test_to_run
     print ("Testcase selected to run                                 :", testcase)
     print ("Test selected to run                                     :", test_to_run)
     print ("system ip address is                                     :", ip_address)
-    print ("After test device initialization_delay in seconds        :", ip_address)
+    print ("after_test_delay for device initialization in seconds    :", wait_device_initialization)
     print ("Iteration_count is                                       :", iteration_count)
     print ("cmd to run after selected test                           :", cmd_to_run)
     print ("stop test if pattern matches                             :", pattern_list)
