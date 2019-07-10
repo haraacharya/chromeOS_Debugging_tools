@@ -36,7 +36,7 @@ def run_command(command, dut_ip, username="root", password="test0000"):
         else:
             return output.decode('ascii')
 
-def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60):
+def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60, wait_device_initialization=20):
     
     if check_if_remote_system_is_live(dut_ip):
         sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'reboot'"
@@ -50,9 +50,32 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
             for i in range(reboot_wait_time):
                 time.sleep(1)
                 if check_if_remote_system_is_live(dut_ip):
-                    time.sleep(10)
+                    print ("waiting for device_initialization_seconds: ", wait_device_initialization)
+                    time.sleep(wait_device_initialization)
                     return True
             print ("system didn't reboot back on after %d seconds wait delay" % (reboot_wait_time))
+            return False
+    else:
+        print ("DUT is not live")
+        return False
+
+def whl_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=60, wait_device_initialization=20):
+    
+    if check_if_remote_system_is_live(dut_ip):
+        sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -h now'"
+        print (sshpassCmd)
+        p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
+        time.sleep(shutdown_wait_time)
+        if not check_if_remote_system_is_live(dut_ip):
+            print ("System shutdown successfull.")
+            for i in range(reboot_wait_time):
+                time.sleep(1)
+                if check_if_remote_system_is_live(dut_ip):
+                    print ("waiting for device_initialization_seconds: ", wait_device_initialization)
+                    time.sleep(wait_device_initialization)
+                    return True
+        else:
+            print ("system didn't shutdown after %d seconds wait delay" % (shutdown_wait_time))
             return False
     else:
         print ("DUT is not live")
@@ -63,7 +86,7 @@ def run_suspend(dut_ip, username="root", password="test0000"):
         suspendCmd = 'suspend_stress_test -c 1'
         suspend_output = run_command(suspendCmd, dut_ip )
         if suspend_output:
-            if searchPatternMatched(suspend_output, pattern_list=["syuspend_failures: 0", "firmware log errors: 0"]):
+            if searchPatternMatched(suspend_output, pattern_list=["suspend_failures: 0", "firmware log errors: 0"]):
                 return True 
             else:
                 print ("No suspend failures observed!")
@@ -102,8 +125,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--testcase', dest='testcase_to_run', default = "", help='testcase to run is before reboot or suspend test')
-    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend"')
+    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend" or "coldboot"')
     parser.add_argument('--ip', dest='ip_address', help='provide remote system ip')
+    parser.add_argument('--device_initialization_wait', dest='wait_device_initialization', default = 60, help='Provide Device initialization delay in seconds after test!')
     parser.add_argument('--count', dest='iteration_count', default = 5, help='Provide iteration count!')
     parser.add_argument('--command', dest='cmd_to_run', default = "dmesg --level=err", help='Please mention the command to check in double quotes!')
     parser.add_argument('--search_for', dest='search_patterns', help='provide one or many search strings with space. If found, test will FAIL/STOP.', nargs='+')
@@ -112,22 +136,25 @@ if __name__ == "__main__":
     pattern_list = args.search_patterns
 
     testcase = args.testcase_to_run.lower()
-    cmd_to_run = args.cmd_to_run.lower()
+    cmd_to_run = args.cmd_to_run
     if args.ip_address:
         ip_address = args.ip_address
     else:
         ip_address = False
         print ("check with --help or give cmd argument --IP <ip_address>")
         sys.exit(1)
+    
+    wait_device_initialization = args.wait_device_initialization
     iteration_count = args.iteration_count
     test_to_run = args.test_to_run
-    print ("Testcase selected to run       :", testcase)
-    print ("Test selected to run           :", test_to_run)
-    print ("system ip address is           :", ip_address)
-    print ("Iteration_count is             :", iteration_count)
-    print ("cmd to run after selected test :", cmd_to_run)
-    print ("stop test if pattern matches   :", pattern_list)
-    print ("****************************")
+    print ("Testcase selected to run                                 :", testcase)
+    print ("Test selected to run                                     :", test_to_run)
+    print ("system ip address is                                     :", ip_address)
+    print ("After test device initialization_delay in seconds        :", ip_address)
+    print ("Iteration_count is                                       :", iteration_count)
+    print ("cmd to run after selected test                           :", cmd_to_run)
+    print ("stop test if pattern matches                             :", pattern_list)
+    print ("**********************************************************")
     
     if (sys.version_info > (3, 0)):
         input("Press Enter to continue...")
@@ -147,8 +174,10 @@ if __name__ == "__main__":
 
         if test_to_run == "suspend":
             print (run_suspend(ip_address))
+        elif test_to_run == "coldboot":
+            print (whl_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
         else:
-            print (run_reboot(ip_address))    
+            print (run_reboot(ip_address, wait_device_initialization=wait_device_initialization))    
         
         count = count + 1
         cmd_output = run_command(cmd_to_run, ip_address, username="root", password="test0000")
