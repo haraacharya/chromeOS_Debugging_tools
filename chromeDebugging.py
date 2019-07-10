@@ -59,7 +59,7 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
         print ("DUT is not live")
         return False
 
-def whl_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=60, wait_device_initialization=20):
+def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=60, wait_device_initialization=20):
     
     if check_if_remote_system_is_live(dut_ip):
         sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -h now'"
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         if test_to_run == "suspend":
             print (run_suspend(ip_address))
         elif test_to_run == "coldboot":
-            print (whl_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
+            print (rtc_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
         else:
             print (run_reboot(ip_address, wait_device_initialization=wait_device_initialization))    
         
