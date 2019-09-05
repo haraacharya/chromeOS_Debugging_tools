@@ -81,6 +81,32 @@ def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_
         print ("DUT is not live")
         return False
 
+def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=60, wait_device_initialization=10):
+    
+    if check_if_remote_system_is_live(dut_ip):
+        sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'ectool reboot_ec cold at-shutdown'"
+        print (sshpassCmd1)
+        p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
+        sshpassCmd2 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -h now'"
+        print (sshpassCmd2)
+        p = subprocess.Popen(sshpassCmd2, stdout=subprocess.PIPE, shell=True)
+        time.sleep(shutdown_wait_time)
+        if not check_if_remote_system_is_live(dut_ip):
+            print ("System shutdown successfull.")
+            for i in range(reboot_wait_time):
+                time.sleep(1)
+                if check_if_remote_system_is_live(dut_ip):
+                    print ("Waiting for device initialization after test in seconds: ", wait_device_initialization)
+                    time.sleep(wait_device_initialization)
+                    return True
+        else:
+            print ("system didn't shutdown after %d seconds wait delay" % (shutdown_wait_time))
+            return False
+    else:
+        print ("DUT is not live")
+        return False
+
+
 def run_suspend(dut_ip, username="root", password="test0000"):
     if check_if_remote_system_is_live(dut_ip):
         suspendCmd = 'suspend_stress_test -c 1'
@@ -125,9 +151,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--testcase', dest='testcase_to_run', default = "", help='testcase to run is before reboot or suspend test')
-    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend" or "coldboot"')
+    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend" or "rtc_coldboot" or "ec_coldboot"')
     parser.add_argument('--ip', dest='ip_address', help='provide remote system ip')
-    parser.add_argument('--after_test_delay', dest='wait_device_initialization', default = 60, help='Provide Device initialization delay in seconds after test!')
+    parser.add_argument('--after_test_delay', dest='wait_device_initialization', default = 25, help='Provide Device initialization delay in seconds after test!')
     parser.add_argument('--count', dest='iteration_count', default = 5, help='Provide iteration count!')
     parser.add_argument('--command', dest='cmd_to_run', default = "dmesg --level=err", help='Please mention the command to check in double quotes!')
     parser.add_argument('--search_for', dest='search_patterns', help='provide one or many search strings with space. If found, test will FAIL/STOP.', nargs='+')
@@ -175,8 +201,10 @@ if __name__ == "__main__":
 
         if test_to_run == "suspend":
             print (run_suspend(ip_address))
-        elif test_to_run == "coldboot":
+        elif test_to_run == "rtc_coldboot":
             print (rtc_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
+        elif test_to_run == "ec_coldboot":
+            print (ec_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
         else:
             print (run_reboot(ip_address, wait_device_initialization=wait_device_initialization))    
         
