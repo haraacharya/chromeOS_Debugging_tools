@@ -12,7 +12,7 @@ import logging.handlers
 
 LOG_FILENAME = datetime.now().strftime('coldboot_logfile_%H_%M_%d_%m_%Y.log')
 LOG_FILENAME_STR = os.path.abspath(LOG_FILENAME)
-print ("Log file name is: %s"% LOG_FILENAME)
+# print ("Log file name is: %s"% LOG_FILENAME)
 logging.basicConfig(filename=LOG_FILENAME, stream=sys.stdout, level=logging.DEBUG, )
 
 #CONFIG PARAMETERS FOR USER TO CHANGE
