@@ -28,6 +28,7 @@ cros_sdk_path = '/home/cssdesk/google_source'
 abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
 shutdown_wait_time = 16
 reboot_wait_time = 80
+reboot_wait_time_minute = str(round(reboot_wait_time/float(60), 2))
 #END CONFIG PARAMETERS FOR USER TO CHANGE
 
 def check_if_remote_system_is_live(ip):
@@ -86,7 +87,7 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
 def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=80, wait_device_initialization=20):
     
     if check_if_remote_system_is_live(dut_ip):
-	sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +8 > /sys/class/rtc/rtc0/wakealarm'"
+	sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +40 > /sys/class/rtc/rtc0/wakealarm'"
         print (sshpassCmd1)
         p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
 
@@ -236,9 +237,9 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
     dlogger.info ("Pressing powerbtn to poweron system")
     for i in range(3):
         os.system(pwr_btn_command)
-        dlogger.info ("Waiting for %d minutes for the system to come up." %(reboot_wait_time/60))
+        dlogger.info ("Waiting for %s minutes for the system to come up." %(reboot_wait_time_minute))
         for i in range(reboot_wait_time):
-            time.sleep(3)
+            time.sleep(1)
             if check_if_remote_system_is_live(dut_ip):
                 dlogger.info("Waiting 10 seconds for device initialization after system boot.")
                 time.sleep(10)
@@ -246,9 +247,9 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
 
     dlogger.info ("Powerbtn wake didnt work even after 3 attempts. Will try Ec reset to recover system")
     os.system(ec_reset_command)
-    dlogger.info("Waiting for %d minutes after ec reset for the system to come up." % (reboot_wait_time / 60))
+    dlogger.info("Waiting for %s minutes after ec reset for the system to come up." % (reboot_wait_time_minute))
     for i in range(reboot_wait_time):
-        time.sleep(3)
+        time.sleep(1)
         if check_if_remote_system_is_live(dut_ip):
             dlogger.info("Waiting 10 seconds for device initialization after system boot.")
             time.sleep(10)
