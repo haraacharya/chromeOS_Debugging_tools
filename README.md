@@ -27,7 +27,7 @@ optional arguments:
                         provide one or many search strings with space. If
                         found, test will FAIL/STOP.  
 
-#python chromeDebugging.py --test reboot --IP <DUT_IP> --command "dmesg --level=err" --search_for "error" "usb"  
+#python chromeDebugging.py --test reboot --ip <DUT_IP> --command "dmesg --level=err" --search_for "error" "usb"  
 
 
 

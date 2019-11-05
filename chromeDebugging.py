@@ -261,9 +261,9 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
 if __name__ == "__main__":
 
     if not is_tool("sshpass"):
-        print ("sshpass is not installed. Please install sshpass with sudo apt-get install")
+        print ("sshpass is not installed. Please install sshpass with sudo apt-get install sshpass")
         logging.info ("Exiting test!")
-        logging.info ("sshpass is not installed. Please install sshpass with sudo apt-get install")
+        logging.info ("sshpass is not installed. Please install sshpass with sudo apt-get install sshpass")
         logging.info ("Exiting test!")
         sys.exit(1)
 
