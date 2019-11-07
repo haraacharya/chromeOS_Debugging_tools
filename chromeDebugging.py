@@ -14,7 +14,7 @@ chrome_debug_log_folder = os.getcwd() + "/debug_log"
 if not os.path.exists(chrome_debug_log_folder):
     os.makedirs(chrome_debug_log_folder)
 
-log_file_name = chrome_debug_log_folder + "/" + datetime.now().strftime('%Y-%m-%d_%H:%M:%S') +"_chrome_debug.log"
+log_file_name = chrome_debug_log_folder + "/" + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') +"_chrome_debug.log"
 #lname = datetime.now().strftime('%Y-%m-%d_%H:%M') +"_chrome_debug.log"
 
 logging.basicConfig(filename= log_file_name, level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -87,7 +87,7 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
 def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=80, wait_device_initialization=20):
     
     if check_if_remote_system_is_live(dut_ip):
-	sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +40 > /sys/class/rtc/rtc0/wakealarm'"
+	sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +15 > /sys/class/rtc/rtc0/wakealarm'"
         print (sshpassCmd1)
         p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
 
@@ -251,8 +251,8 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
     for i in range(reboot_wait_time):
         time.sleep(1)
         if check_if_remote_system_is_live(dut_ip):
-            dlogger.info("Waiting 10 seconds for device initialization after system boot.")
-            time.sleep(10)
+            dlogger.info("Waiting 25 seconds for device initialization after system boot.")
+            time.sleep(25)
             dlogger.info("Able to recover system with ec reset.")
             return True
     dlogger.info("3 attempts of powerbtn wake and 1 attempt of ec reset failed to recover system. Exiting test.")
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     parser.add_argument('--testcase', dest='testcase_to_run', default = "", help='testcase to run is before reboot or suspend test')
     parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend" or "rtc_coldboot" or "ec_coldboot" or servo_coldboot')
     parser.add_argument('--ip', dest='ip_address', help='provide remote system ip')
-    parser.add_argument('--after_test_delay', dest='wait_device_initialization', default = 10, help='Provide Device initialization delay in seconds after test!')
+    parser.add_argument('--after_test_delay', dest='wait_device_initialization', default = 25, help='Provide Device initialization delay in seconds after test!')
     parser.add_argument('--count', dest='iteration_count', default = 5, help='Provide iteration count!')
     parser.add_argument('--command', dest='cmd_to_run', default = "dmesg --level=err", help='Please mention the command to check in double quotes!')
     parser.add_argument('--search_for', dest='search_patterns', help='provide one or many search strings with space. If found, test will FAIL/STOP.', nargs='+')
