@@ -26,8 +26,9 @@ dlogger.addHandler(handler)
 #CONFIG PARAMETERS FOR USER TO CHANGE
 cros_sdk_path = '/home/cssdesk/google_source'
 abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
-shutdown_wait_time = 16
-reboot_wait_time = 120
+wait_device_initialization = 30
+shutdown_wait_time = 120
+reboot_wait_time = 150
 reboot_wait_time_minute = str(round(reboot_wait_time/float(60), 2))
 #END CONFIG PARAMETERS FOR USER TO CHANGE
 
@@ -110,7 +111,7 @@ def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_
         print ("DUT is not live")
         return False
 
-def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=60, wait_device_initialization=10):
+def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=120, wait_device_initialization=wait_device_initialization):
     
     if check_if_remote_system_is_live(dut_ip):
         sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'ectool reboot_ec cold at-shutdown'"
@@ -125,7 +126,7 @@ def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_t
             for i in range(reboot_wait_time):
                 time.sleep(1)
                 if check_if_remote_system_is_live(dut_ip):
-                    print ("Waiting for device initialization after test in seconds: ", wait_device_initialization)
+                    print ("Waiting for %d seconds for device initialization after boot."%(wait_device_initialization))
                     time.sleep(wait_device_initialization)
                     return True
         else:
@@ -211,6 +212,7 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
     sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -P now'"
     dlogger.info (sshpassCmd)
     p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
+    dlogger.info ("Waiting for %d seconds for shutdown"%(shutdown_wait_time))
     time.sleep(shutdown_wait_time)
     if not check_if_remote_system_is_live(dut_ip):
         dlogger.info ("System shutdown successfull.")
@@ -241,8 +243,8 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
         for i in range(reboot_wait_time):
             time.sleep(1)
             if check_if_remote_system_is_live(dut_ip):
-                dlogger.info("Waiting 40 seconds for device initialization after system boot.")
-                time.sleep(40)
+                dlogger.info("Waiting 60 seconds for device initialization after system boot.")
+                time.sleep(60)
                 return True
 
     dlogger.info ("Powerbtn wake didnt work even after 3 attempts. Will try Ec reset to recover system")
@@ -251,8 +253,8 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
     for i in range(reboot_wait_time):
         time.sleep(1)
         if check_if_remote_system_is_live(dut_ip):
-            dlogger.info("Waiting 40 seconds for device initialization after system boot.")
-            time.sleep(40)
+            dlogger.info("Waiting 60 seconds for device initialization after system boot.")
+            time.sleep(60)
             dlogger.info("Able to recover system with ec reset.")
             return True
     dlogger.info("3 attempts of powerbtn wake and 1 attempt of ec reset failed to recover system. Exiting test.")
