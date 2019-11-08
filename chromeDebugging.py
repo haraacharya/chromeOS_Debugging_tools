@@ -27,7 +27,7 @@ dlogger.addHandler(handler)
 cros_sdk_path = '/home/cssdesk/google_source'
 abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
 shutdown_wait_time = 16
-reboot_wait_time = 80
+reboot_wait_time = 120
 reboot_wait_time_minute = str(round(reboot_wait_time/float(60), 2))
 #END CONFIG PARAMETERS FOR USER TO CHANGE
 
@@ -241,8 +241,8 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
         for i in range(reboot_wait_time):
             time.sleep(1)
             if check_if_remote_system_is_live(dut_ip):
-                dlogger.info("Waiting 10 seconds for device initialization after system boot.")
-                time.sleep(10)
+                dlogger.info("Waiting 40 seconds for device initialization after system boot.")
+                time.sleep(40)
                 return True
 
     dlogger.info ("Powerbtn wake didnt work even after 3 attempts. Will try Ec reset to recover system")
@@ -251,8 +251,8 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
     for i in range(reboot_wait_time):
         time.sleep(1)
         if check_if_remote_system_is_live(dut_ip):
-            dlogger.info("Waiting 25 seconds for device initialization after system boot.")
-            time.sleep(25)
+            dlogger.info("Waiting 40 seconds for device initialization after system boot.")
+            time.sleep(40)
             dlogger.info("Able to recover system with ec reset.")
             return True
     dlogger.info("3 attempts of powerbtn wake and 1 attempt of ec reset failed to recover system. Exiting test.")
