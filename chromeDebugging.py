@@ -136,7 +136,7 @@ def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_t
                     time.sleep(wait_device_initialization)
                     return True
             dlogger.info ("System didnt come back on with ectool reboot ec. There might be chipset force shutdown issue in ec log")
-            dlogger.info ("Trying ec powerbtn wake to continue the test)
+            dlogger.info ("Trying ec powerbtn wake to continue the test")
             ec_pwrbtn()
             for i in range(reboot_wait_time):
                 time.sleep(1)
