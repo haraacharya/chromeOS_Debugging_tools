@@ -111,31 +111,45 @@ def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_
         print ("DUT is not live")
         return False
 
+def ec_pwrbtn():
+    os.chdir(cros_sdk_path)	
+    dlogger.info (os.getcwd())
+    ec_console_powerbtn_command = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:powerbtn'
+    os.system(ec_console_powerbtn_command)
+
 def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=120, wait_device_initialization=wait_device_initialization):
     
     if check_if_remote_system_is_live(dut_ip):
         sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'ectool reboot_ec cold at-shutdown'"
-        print (sshpassCmd1)
+        dlogger.info (sshpassCmd1)
         p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
         sshpassCmd2 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -P now'"
-        print (sshpassCmd2)
+        dlogger.info (sshpassCmd2)
         p = subprocess.Popen(sshpassCmd2, stdout=subprocess.PIPE, shell=True)
         time.sleep(shutdown_wait_time)
         if not check_if_remote_system_is_live(dut_ip):
-            print ("System shutdown successfull.")
+            dlogger.info ("System shutdown successfull.")
             for i in range(reboot_wait_time):
                 time.sleep(1)
                 if check_if_remote_system_is_live(dut_ip):
-                    print ("Waiting for %d seconds for device initialization after boot."%(wait_device_initialization))
+                    dlogger.info ("Waiting for %d seconds for device initialization after boot."%(wait_device_initialization))
                     time.sleep(wait_device_initialization)
                     return True
+            dlogger.info ("System didnt come back on with ectool reboot ec. There might be chipset force shutdown issue in ec log")
+            dlogger.info ("Trying ec powerbtn wake to continue the test)
+            ec_pwrbtn()
+            for i in range(reboot_wait_time):
+                time.sleep(1)
+                if check_if_remote_system_is_live(dut_ip):
+                    dlogger.info ("Waiting for %d seconds for device initialization after boot."%(wait_device_initialization))
+                    time.sleep(wait_device_initialization)
+                    return True    
         else:
-            print ("system didn't shutdown after %d seconds wait delay" % (shutdown_wait_time))
+            dlogger.info ("system didn't shutdown after %d seconds wait delay" % (shutdown_wait_time))
             return False
     else:
-        print ("DUT is not live")
+        dlogger.info ("DUT is not live")
         return False
-
 
 def run_suspend(dut_ip, username="root", password="test0000"):
     if check_if_remote_system_is_live(dut_ip):
