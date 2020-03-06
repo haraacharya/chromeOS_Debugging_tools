@@ -24,6 +24,9 @@ dlogger.addHandler(handler)
 
 
 #CONFIG PARAMETERS FOR USER TO CHANGE
+s0ix_residency_file = '/sys/kernel/debug/telemetry/s0ix_residency_usec'
+s0ix_lidclose_wait = 10
+s0ix_lidopen_wait = 10
 cros_sdk_path = '/home/cssdesk/google_source'
 abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
 wait_device_initialization = 30
@@ -34,9 +37,9 @@ reboot_wait_time_minute = str(round(reboot_wait_time/float(60), 2))
 
 def check_if_remote_system_is_live(ip):
     hostname = ip
-    print ("hostname is", hostname)
+    # print ("hostname is", hostname)
     try:
-        response = os.system("ping -c 1 " + hostname)
+        response = os.system("ping -c 1 " + hostname + '>/dev/null 2>&1')
     except:
         return False
 
@@ -48,7 +51,7 @@ def check_if_remote_system_is_live(ip):
 def run_command(command, dut_ip, username="root", password="test0000"):
     
     if check_if_remote_system_is_live(dut_ip):
-        sshpassCmd = "sshpass -p " + password + " ssh " + username + "@" + dut_ip + " '" + command +  "'"
+        sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " '" + command +  "'"
         print (sshpassCmd)
         p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
         (output, err) = p.communicate()
@@ -88,7 +91,7 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
 def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=80, wait_device_initialization=20):
     
     if check_if_remote_system_is_live(dut_ip):
-	sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +15 > /sys/class/rtc/rtc0/wakealarm'"
+        sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +15 > /sys/class/rtc/rtc0/wakealarm'"
         print (sshpassCmd1)
         p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
 
@@ -273,7 +276,50 @@ def servo_coldboot(dut_ip, username="root", password="test0000"):
             return True
     dlogger.info("3 attempts of powerbtn wake and 1 attempt of ec reset failed to recover system. Exiting test.")
     return False
-  
+
+
+def lid_s0ix_test(dut_ip, username="root", password="test0000"):
+    lid_close_command = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:lidclose'
+    lid_open_command = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:lidopen'
+
+    if check_if_remote_system_is_live(dut_ip):
+        system_loggedin_check_cmd = 'ls -l /home/chronos/user | grep -i Downloads'
+        if run_command(system_loggedin_check_cmd, dut_ip):
+            dlogger.info("DUT is logged in")
+            dlogger.info("checking s0ix increment counter")
+            s0ix_counter_check_after_test = "cat " + s0ix_residency_file
+            s0ix_residency_before_s0ix = run_command(s0ix_counter_check_after_test, ip_address, username="root", password="test0000")
+            dlogger.info("s0ix residency count before s0ix is: %s" %(s0ix_residency_before_s0ix))
+        else:
+            dlogger.info("DUT is not logged in. Exiting test as lidclose will shutdown the system.")
+            sys.exit()
+
+    os.chdir(cros_sdk_path)
+    dlogger.info(os.getcwd())
+
+    dlogger.info("Sending lidclose command")
+    os.system(lid_close_command + '>/dev/null 2>&1')
+    dlogger.info("lidclose waiting for %d seconds"% (s0ix_lidclose_wait))
+    time.sleep(s0ix_lidclose_wait)
+    dlogger.info("Sending lidopen command")
+    os.system(lid_open_command + '>/dev/null 2>&1')
+    dlogger.info("lidopen waiting for %d seconds" % (s0ix_lidopen_wait))
+    time.sleep(s0ix_lidopen_wait)
+    if check_if_remote_system_is_live(dut_ip):
+        dlogger.info("checking s0ix increment counter")
+        s0ix_counter_check_after_test = "cat " + s0ix_residency_file
+        s0ix_residency_after_s0ix = run_command(s0ix_counter_check_after_test, ip_address, username="root", password="test0000")
+        dlogger.info("s0ix residency count after s0ix is: %s" %(s0ix_residency_after_s0ix))
+        if (int(s0ix_residency_after_s0ix) > int(s0ix_residency_before_s0ix)):
+            dlogger.info("S0ix counter incremented")
+            return True
+        else:
+            dlogger.info("S0ix counter didn't incremented. Will exit test.")
+            return False
+    else:
+        dlogger.info("Unable to wake system up after lidopen")
+        return False
+
 
 
 if __name__ == "__main__":
@@ -285,7 +331,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--testcase', dest='testcase_to_run', default = "", help='testcase to run is before reboot or suspend test')
-    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "suspend" or "rtc_coldboot" or "ec_coldboot" or servo_coldboot')
+    parser.add_argument('--test', dest='test_to_run', default = "reboot", help='test to run is either "reboot" or "lid_s0ix" or "suspend" or "rtc_coldboot" or "ec_coldboot" or servo_coldboot')
     parser.add_argument('--ip', dest='ip_address', help='provide remote system ip')
     parser.add_argument('--after_test_delay', dest='wait_device_initialization', default = 25, help='Provide Device initialization delay in seconds after test!')
     parser.add_argument('--count', dest='iteration_count', default = 5, help='Provide iteration count!')
@@ -311,14 +357,6 @@ if __name__ == "__main__":
     iteration_count = args.iteration_count
     test_to_run = args.test_to_run
     
-    if test_to_run == "servo_coldboot":
-        if servod_process(cros_sdk_path, abs_cros_sdk_path):
-            dlogger.info ("Servod PASS. Will continue test.**************")
-        else:
-            dlogger.info ("Servod not running.")
-            dlogger.info ("Unable to start servod. Exiting test.")
-            sys.exit()
-
     print ("Testcase selected to run                                 :", testcase)
     print ("Test selected to run                                     :", test_to_run)
     print ("system ip address is                                     :", ip_address)
@@ -329,10 +367,23 @@ if __name__ == "__main__":
     if test_to_run == "servo_coldboot":
         print ("cros_sdk_path is                                         :", cros_sdk_path)
         print ("abs_cros_sdk_path is                                     :", abs_cros_sdk_path)
-        
+
+    if test_to_run == "lid_s0ix":
+        print ("s0ix_residency_file path is                              :", s0ix_residency_file)
+        print ("cros_sdk_path is                                         :", cros_sdk_path)
+        print ("abs_cros_sdk_path is                                     :", abs_cros_sdk_path)
+
     print ("**********************************************************")
     
-        
+    if test_to_run == "servo_coldboot" or test_to_run == "lid_s0ix":
+        if servod_process(cros_sdk_path, abs_cros_sdk_path):
+            dlogger.info ("Servod PASS. Will continue test.**************")
+        else:
+            dlogger.info ("Servod not running.")
+            dlogger.info ("Unable to start servod. Exiting test.")
+            sys.exit()
+
+
     if (sys.version_info > (3, 0)):
         input("Press Enter to continue...")
     else:
@@ -361,6 +412,8 @@ if __name__ == "__main__":
             print (ec_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
         elif test_to_run == "servo_coldboot":
             print (servo_coldboot(ip_address))
+        elif test_to_run == "lid_s0ix":
+            print (lid_s0ix_test(ip_address))
         else:
             print (run_reboot(ip_address, wait_device_initialization=wait_device_initialization))    
         
