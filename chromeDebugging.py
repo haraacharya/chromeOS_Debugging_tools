@@ -390,7 +390,7 @@ if __name__ == "__main__":
         raw_input("Press Enter to continue...")
     
         
-    count = 1
+    count = 0
     
     while (count < int(iteration_count)):
         dlogger.info ("******************************")
