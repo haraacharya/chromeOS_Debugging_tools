@@ -29,7 +29,7 @@ s0ix_lidclose_wait = 10
 s0ix_lidopen_wait = 10
 #cros_sdk_path = '/home/cssdesk/google_source'
 #abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
-#wait_device_initialization = 15
+wait_device_initialization = 15
 shutdown_wait_time = 15
 reboot_wait_time = 150
 reboot_wait_time_minute = str(round(reboot_wait_time/float(60), 2))
@@ -51,7 +51,7 @@ def check_if_remote_system_is_live(ip):
 def run_command(command, dut_ip, username="root", password="test0000"):
     
     if check_if_remote_system_is_live(dut_ip):
-        sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " '" + command +  "'"
+        sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " '" + command +  "'"
         print (sshpassCmd)
         p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
         (output, err) = p.communicate()
@@ -65,10 +65,10 @@ def run_command(command, dut_ip, username="root", password="test0000"):
         else:
             return output.decode('ascii')
 
-def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60, wait_device_initialization=20):
+def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60):
     
     if check_if_remote_system_is_live(dut_ip):
-        sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'reboot'"
+        sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'reboot'"
         print (sshpassCmd)
         p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
         time.sleep(3)
@@ -88,14 +88,14 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
         print ("DUT is not live")
         return False
 
-def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=80, wait_device_initialization=15):
+def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=80):
     
     if check_if_remote_system_is_live(dut_ip):
-        sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'echo +15 > /sys/class/rtc/rtc0/wakealarm'"
+        sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'echo +15 > /sys/class/rtc/rtc0/wakealarm'"
         print (sshpassCmd1)
         p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
 
-        sshpassCmd2 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -h now'"
+        sshpassCmd2 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'shutdown -h now'"
         print (sshpassCmd2)
         p = subprocess.Popen(sshpassCmd2, stdout=subprocess.PIPE, shell=True)
         time.sleep(shutdown_wait_time)
@@ -120,13 +120,13 @@ def ec_pwrbtn():
     ec_console_powerbtn_command = 'dut-control ec_uart_cmd:powerbtn'
     os.system(ec_console_powerbtn_command)
 
-def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=120, wait_device_initialization=15):
+def ec_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10, reboot_wait_time=120):
     
     if check_if_remote_system_is_live(dut_ip):
-        sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'ectool reboot_ec cold at-shutdown'"
+        sshpassCmd1 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'ectool reboot_ec cold at-shutdown'"
         dlogger.info (sshpassCmd1)
         p = subprocess.Popen(sshpassCmd1, stdout=subprocess.PIPE, shell=True)
-        sshpassCmd2 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -P now'"
+        sshpassCmd2 = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'shutdown -P now'"
         dlogger.info (sshpassCmd2)
         p = subprocess.Popen(sshpassCmd2, stdout=subprocess.PIPE, shell=True)
         time.sleep(shutdown_wait_time)
@@ -242,7 +242,7 @@ def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_t
     pwr_btn_command = 'dut-control pwr_button:press sleep:0.5 pwr_button:release'
     ec_reset_command = 'dut-control ec_uart_cmd:reboot'
     dlogger.info ("Sending shutdown command to the DUT")
-    sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no " + username + "@" + dut_ip + " 'shutdown -P now'"
+    sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'shutdown -P now'"
     dlogger.info (sshpassCmd)
     p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
     dlogger.info ("Waiting for %d seconds for shutdown"%(shutdown_wait_time))
@@ -412,18 +412,37 @@ if __name__ == "__main__":
             dlogger.info (testcase_output)
             time.sleep(5)
 
+        # if test_to_run == "suspend":
+        #     print (run_suspend(ip_address))
+        # elif test_to_run == "rtc_coldboot":
+        #     print (rtc_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
+        # elif test_to_run == "ec_coldboot":
+        #     print (ec_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
+        # elif test_to_run == "servo_coldboot":
+        #     print (servo_coldboot(ip_address))
+        # elif test_to_run == "lid_s0ix":
+        #     print (lid_s0ix_test(ip_address))
+        # else:
+        #     print (run_reboot(ip_address, wait_device_initialization=wait_device_initialization))
+
+        result = False
+
         if test_to_run == "suspend":
-            print (run_suspend(ip_address))
+            result = run_suspend(ip_address)
         elif test_to_run == "rtc_coldboot":
-            print (rtc_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
+            result = rtc_cold_reboot(ip_address, wait_device_initialization)
         elif test_to_run == "ec_coldboot":
-            print (ec_cold_reboot(ip_address, wait_device_initialization=wait_device_initialization ))
+            result = ec_cold_reboot(ip_address, wait_device_initialization)
         elif test_to_run == "servo_coldboot":
-            print (servo_coldboot(ip_address))
+            result = servo_coldboot(ip_address)
         elif test_to_run == "lid_s0ix":
-            print (lid_s0ix_test(ip_address))
+            result = lid_s0ix_test(ip_address)
         else:
-            print (run_reboot(ip_address, wait_device_initialization=wait_device_initialization))    
+            result = run_reboot(ip_address, wait_device_initialization)
+
+        if not result:
+            dlogger.info ("Exiting test.")
+            break   
         
         count = count + 1
         cmd_output = run_command(cmd_to_run, ip_address, username="root", password="test0000")
@@ -435,11 +454,10 @@ if __name__ == "__main__":
                 dlogger.info ("cmd %s successfull!"%(cmd_to_run))
         else:
             dlogger.info ("please check the command you are trying!")
+            dlogger.info ("Exiting test.")
             break
     dlogger.info ("******************************")
     dlogger.info ("******************************")
     dlogger.info ("Completed ITERATION %d of %d" % (count, int(iteration_count)))
     dlogger.info ("******************************")
     dlogger.info ("******************************")
-
-            
