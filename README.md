@@ -17,6 +17,12 @@ You will need to install sshpass to run this script.
 $ sudo apt-get install sshpass
 ```
 
+You could also do this in the google chroot environment.
+
+```
+$ sudo emerge sshpass
+```
+
 ## Running
 
 ```
