@@ -261,7 +261,7 @@ def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_t
             g3_status = True
             break
     if not g3_status:
-        dlogger.error("DUT didnt enter G3 after %d seconds. Exiting test"%(shutdown_wait_time + 20) )
+        dlogger.error("DUT didnt enter G3 after %d seconds."%(shutdown_wait_time + 20) )
         return False
            
 
@@ -286,7 +286,7 @@ def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_t
             time.sleep(wait_device_initialization)
             dlogger.info("Able to recover system with ec reset.")
             return True
-    dlogger.info("3 attempts of powerbtn wake and 1 attempt of ec reset failed to recover system. Exiting test.")
+    dlogger.info("3 attempts of powerbtn wake and 1 attempt of ec reset failed to recover system.")
     return False
 
 
@@ -388,7 +388,8 @@ if __name__ == "__main__":
             dlogger.info ("Servod PASS. Will continue test.**************")
         else:
             dlogger.info ("Servod not running.")
-            dlogger.info ("Unable to start servod. Exiting test.")
+            dlogger.info ("Unable to start servod.")
+            dlogger.info ("Exiting test.")
             sys.exit()
 
 
