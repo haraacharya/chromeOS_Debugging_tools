@@ -464,7 +464,11 @@ if __name__ == "__main__":
             else:
                 dlogger.info ("cmd %s successfull!"%(cmd_to_run))
         else:
+<<<<<<< HEAD
             dlogger.info ("please check the command you are trying!. Not exiting test for command failure.")
+=======
+            dlogger.info ("please check the command you are trying!. Will not exit test for command failure.")
+>>>>>>> 4c0b4dc87cad14c7dbad32cab722f306409284f3
             #dlogger.info ("Exiting test.")
             #break
     dlogger.info ("******************************")
