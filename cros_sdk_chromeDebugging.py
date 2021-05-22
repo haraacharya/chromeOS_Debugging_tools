@@ -249,10 +249,20 @@ def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_t
     time.sleep(shutdown_wait_time)
     if not check_if_remote_system_is_live(dut_ip):
         dlogger.info ("System shutdown successfull.")
+    else:
+        dlogger.info ("System shutdown not successful. Trying again after 10 seconds.")
+        time.sleep(10)
+        dlogger.info ("Sending shutdown command 2nd time to the DUT")
+        p = subprocess.Popen(sshpassCmd, stdout=subprocess.PIPE, shell=True)
+        dlogger.info ("Waiting for %d seconds for shutdown"%(shutdown_wait_time))
+        time.sleep(shutdown_wait_time)
+        if check_if_remote_system_is_live(dut_ip):
+            dlogger.info ("System is not shutingdown with command. 2 attempts tried. Exiting test")
+            return False
 	
     #os.chdir(cros_sdk_path)	
-    dlogger.info (os.getcwd())
-    dlogger.info ("do G3 check for 20 seconds")
+    #dlogger.info (os.getcwd())
+    dlogger.info ("Doing G3 check for next 20 seconds.")
     g3_status = False
     for i in range(20):
         time.sleep(1)
@@ -454,9 +464,9 @@ if __name__ == "__main__":
             else:
                 dlogger.info ("cmd %s successfull!"%(cmd_to_run))
         else:
-            dlogger.info ("please check the command you are trying!")
-            dlogger.info ("Exiting test.")
-            break
+            dlogger.info ("please check the command you are trying!. Not exiting test for command failure.")
+            #dlogger.info ("Exiting test.")
+            #break
     dlogger.info ("******************************")
     dlogger.info ("******************************")
     dlogger.info ("Completed ITERATION %d of %d" % (count, int(iteration_count)))
