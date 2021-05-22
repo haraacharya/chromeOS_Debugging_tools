@@ -454,9 +454,9 @@ if __name__ == "__main__":
             else:
                 dlogger.info ("cmd %s successfull!"%(cmd_to_run))
         else:
-            dlogger.info ("please check the command you are trying!")
-            dlogger.info ("Exiting test.")
-            break
+            dlogger.info ("please check the command you are trying!. Will not exit test for command failure.")
+            #dlogger.info ("Exiting test.")
+            #break
     dlogger.info ("******************************")
     dlogger.info ("******************************")
     dlogger.info ("Completed ITERATION %d of %d" % (count, int(iteration_count)))
