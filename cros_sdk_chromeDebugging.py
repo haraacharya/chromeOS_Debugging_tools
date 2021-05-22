@@ -262,7 +262,7 @@ def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_t
 	
     #os.chdir(cros_sdk_path)	
     #dlogger.info (os.getcwd())
-    dlogger.info ("Doing G3 check for next 20 seconds.")
+    dlogger.info ("Will continue to check G3 for next 20 seconds.")
     g3_status = False
     for i in range(20):
         time.sleep(1)
@@ -464,11 +464,7 @@ if __name__ == "__main__":
             else:
                 dlogger.info ("cmd %s successfull!"%(cmd_to_run))
         else:
-<<<<<<< HEAD
             dlogger.info ("please check the command you are trying!. Not exiting test for command failure.")
-=======
-            dlogger.info ("please check the command you are trying!. Will not exit test for command failure.")
->>>>>>> 4c0b4dc87cad14c7dbad32cab722f306409284f3
             #dlogger.info ("Exiting test.")
             #break
     dlogger.info ("******************************")
