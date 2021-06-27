@@ -441,15 +441,15 @@ if __name__ == "__main__":
         if test_to_run == "suspend":
             result = run_suspend(ip_address)
         elif test_to_run == "rtc_coldboot":
-            result = rtc_cold_reboot(ip_address, wait_device_initialization)
+            result = rtc_cold_reboot(ip_address)
         elif test_to_run == "ec_coldboot":
-            result = ec_cold_reboot(ip_address, wait_device_initialization)
+            result = ec_cold_reboot(ip_address)
         elif test_to_run == "servo_coldboot":
             result = servo_coldboot(ip_address)
         elif test_to_run == "lid_s0ix":
             result = lid_s0ix_test(ip_address)
         else:
-            result = run_reboot(ip_address, wait_device_initialization)
+            result = run_reboot(ip_address)
 
         if not result:
             dlogger.info ("Exiting test.")
