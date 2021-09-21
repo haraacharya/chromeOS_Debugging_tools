@@ -65,7 +65,7 @@ def run_command(command, dut_ip, username="root", password="test0000"):
         else:
             return output.decode('ascii')
 
-def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60):
+def run_reboot(dut_ip, username="root", password="test0000"):
     
     if check_if_remote_system_is_live(dut_ip):
         sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'reboot'"
@@ -76,6 +76,7 @@ def run_reboot(dut_ip, username="root", password="test0000", reboot_wait_time=60
             print ("System reboot didn't happen.")
             return False
         else:
+            print ("***************Maximum reboot wait time in seconds: ", reboot_wait_time)
             for i in range(reboot_wait_time):
                 time.sleep(1)
                 if check_if_remote_system_is_live(dut_ip):
