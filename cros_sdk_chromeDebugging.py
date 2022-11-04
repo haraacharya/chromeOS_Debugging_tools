@@ -116,7 +116,7 @@ def rtc_cold_reboot(dut_ip, username="root", password="test0000", shutdown_wait_
         return False
 
 def ec_pwrbtn():
-    os.chdir(cros_sdk_path)	
+    # os.chdir(cros_sdk_path)	
     dlogger.info (os.getcwd())
     ec_console_powerbtn_command = 'dut-control ec_uart_cmd:powerbtn'
     os.system(ec_console_powerbtn_command)
@@ -220,18 +220,32 @@ def servod_process():
         dlogger.info("Servod couldn't be started successfully. Exiting test.")
         return False
 
-def g3_check():
-    ec_uart_capture_enable_command = 'dut-control ec_uart_capture:on'
-    ec_uart_capture_disable_command = 'dut-control ec_uart_capture:off'
-    ec_console_system_status_command ='dut-control ec_uart_cmd:powerinfo'
-    ec_console_system_status_output = 'dut-control ec_uart_stream'
-    os.system(ec_uart_capture_enable_command)
-    os.system(ec_console_system_status_command)
-    system_status_check = os.popen(ec_console_system_status_output).read()
-    os.system(ec_uart_capture_disable_command)
-    dlogger.info (system_status_check)
+# def g3_check():
+#     ec_uart_capture_enable_command = 'dut-control ec_uart_capture:on'
+#     ec_uart_capture_disable_command = 'dut-control ec_uart_capture:off'
+#     ec_console_system_status_command ='dut-control ec_uart_cmd:powerinfo'
+#     ec_console_system_status_output = 'dut-control ec_uart_stream'
+#     os.system(ec_uart_capture_enable_command)
+#     os.system(ec_console_system_status_command)
+#     system_status_check = os.popen(ec_console_system_status_output).read()
+#     os.system(ec_uart_capture_disable_command)
+#     dlogger.info (system_status_check)
     
-    if system_status_check.find("G3") != -1:
+#     if system_status_check.find("G3") != -1:
+#         dlogger.info ("System successfully went to G3")
+#         return True
+#     else:
+#         dlogger.info ("System is not in G3.")
+#         return False
+
+#g3 check using dut-control
+def g3_check():
+    p = subprocess.Popen('dut-control ec_system_powerstate', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    retval = p.wait()
+    out, err = p.communicate()
+    outString = out.decode()
+    dlogger.info(outString)
+    if re.search("G3", outString, re.IGNORECASE):
         dlogger.info ("System successfully went to G3")
         return True
     else:
@@ -240,7 +254,8 @@ def g3_check():
         
 
 def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_time=10):
-    pwr_btn_command = 'dut-control pwr_button:press sleep:0.5 pwr_button:release'
+    # pwr_btn_command = 'dut-control pwr_button:press sleep:0.5 pwr_button:release'
+    pwr_btn_command = 'dut-control pwr_button_hold:1 & sleep 0.5 & dut-control pwr_button_hold:0'
     ec_reset_command = 'dut-control ec_uart_cmd:reboot'
     dlogger.info ("Sending shutdown command to the DUT")
     sshpassCmd = "sshpass -p " + password + " ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null " + username + "@" + dut_ip + " 'shutdown -P now'"
@@ -261,8 +276,6 @@ def servo_coldboot(dut_ip, username="root", password="test0000", shutdown_wait_t
             dlogger.info ("System is not shutingdown with command. 2 attempts tried. Exiting test")
             return False
 	
-    #os.chdir(cros_sdk_path)	
-    #dlogger.info (os.getcwd())
     dlogger.info ("Will continue to check G3 for next 20 seconds.")
     g3_status = False
     for i in range(20):
