@@ -27,8 +27,8 @@ dlogger.addHandler(handler)
 s0ix_residency_file = '/sys/kernel/debug/telemetry/s0ix_residency_usec'
 s0ix_lidclose_wait = 10
 s0ix_lidopen_wait = 10
-#cros_sdk_path = '/home/cssdesk/google_source'
-#abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
+cros_sdk_path = '/home/cssdesk/google_source'
+abs_cros_sdk_path = '/home/cssdesk/depot_tools/cros_sdk --no-ns-pid'
 wait_device_initialization = 15
 shutdown_wait_time = 15
 reboot_wait_time = 150
